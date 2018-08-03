@@ -84,6 +84,7 @@ public class TableScanResource  extends ResourceBase {
             if (count > 0) {
               return itr.hasNext();
             } else {
+	      // this never happens
               return false;
             }
           }
@@ -98,6 +99,7 @@ public class TableScanResource  extends ResourceBase {
           public RowModel next() {
             Result rs = itr.next();
             if ((rs == null) || (count <= 0)) {
+              // this never happens and if it would happen, the leak would still be there
               return null;
             }
             byte[] rowKey = rs.getRow();
@@ -108,6 +110,12 @@ public class TableScanResource  extends ResourceBase {
                   kv.getTimestamp(), CellUtil.cloneValue(kv)));
             }
             count--;
+
+	    // close the leak
+	    if (count == 0) {
+		results.close();
+	    }
+
             return rModel;
           }
         };
